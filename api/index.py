@@ -1,32 +1,19 @@
 import os
 import sys
 
-# Override standard sqlite3 with pysqlite3-binary for Vercel Serverless environment
-# since Vercel's standard Python runtime lacks the compiled _sqlite3 database extension.
-try:
-    __import__('pysqlite3')
-    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-except ImportError:
-    pass
+# Add project root to sys.path to ensure backend imports work in Vercel Serverless environment
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
-# Add project root to sys.path to ensure backend imports work in Vercel Serverless environment
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.database import init_db
 from backend.config import ALLOWED_ORIGINS
 from backend.routers import students, skills, certifications, analytics
 
-# Lifespan manager to trigger database schema generation and seeding
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Initialize SQLite database schema and seed if empty
-    init_db()
-    yield
+# Initialize SQLite database schema and seed if empty (Runs during Vercel Cold Start)
+init_db()
 
 # Create FastAPI instance with explicit Swagger & OpenAPI URLs
 app = FastAPI(
@@ -35,8 +22,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json",
-    lifespan=lifespan
+    openapi_url="/openapi.json"
 )
 
 # Configure CORS Middleware
