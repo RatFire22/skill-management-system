@@ -185,6 +185,40 @@ function closeStudentDrawer() {
 
 // Initial App Startup Handler
 document.addEventListener('DOMContentLoaded', async () => {
+    // Theme Switcher Initialization
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeToggleIcon = document.getElementById('theme-toggle-icon');
+    const themeToggleText = document.getElementById('theme-toggle-text');
+
+    // Check saved theme or system preference
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+        document.body.classList.add('dark');
+        updateThemeUI(true);
+    } else {
+        document.body.classList.remove('dark');
+        updateThemeUI(false);
+    }
+
+    themeToggle?.addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeUI(isDark);
+    });
+
+    function updateThemeUI(isDark) {
+        if (!themeToggleIcon || !themeToggleText) return;
+        if (isDark) {
+            themeToggleIcon.className = 'fa-solid fa-sun';
+            themeToggleText.textContent = 'Light Mode';
+        } else {
+            themeToggleIcon.className = 'fa-solid fa-moon';
+            themeToggleText.textContent = 'Dark Mode';
+        }
+    }
+
     // 1. Bind Navigation Click Handlers
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
