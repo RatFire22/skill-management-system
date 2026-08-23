@@ -1,5 +1,14 @@
 import os
 import sys
+
+# Override standard sqlite3 with pysqlite3-binary for Vercel Serverless environment
+# since Vercel's standard Python runtime lacks the compiled _sqlite3 database extension.
+try:
+    __import__('pysqlite3')
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
